@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/refs/heads/master/src/schemas/json/github-workflow.json
+name: CD
+run-name: Running continuous deployment on ${{ github.actor }}'s commits
+
+on:
+  push:
+    tags:
+      - "*"
+
+concurrency:
+  group: cd
+  cancel-in-progress: false
+
+jobs:
+  buildAndDeploy:
+    name: Build & Deploy all Docker images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup pipeline
+        uses: ./.github/composite/setup
+        with:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build images
+        uses: ./.github/composite/build-images
+        with:
+          VERSION: ${{ github.ref_name }}
+          SHOULD_UPLOAD: "true"
