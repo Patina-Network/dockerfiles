@@ -1,11 +1,8 @@
-import {
-  DockerClient,
-  EnvClient,
-  EnvClientStrategy,
-  Utils,
-} from "@tahminator/pipeline";
+import { DockerClient, Utils } from "@tahminator/pipeline";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+
+const { required } = Utils;
 
 const { ver, shouldUpload } = await yargs(hideBin(process.argv))
   .option("ver", {
@@ -23,10 +20,7 @@ const { ver, shouldUpload } = await yargs(hideBin(process.argv))
 const targets = ["pg-az"] as const;
 
 export async function main() {
-  const envClient = EnvClient.create(EnvClientStrategy.SOPS);
-  const { dockerHubPat, dockerHubUsername } = parseCiEnv(
-    await envClient.readFromEnv("secrets.yaml"),
-  );
+  const { dockerHubPat, dockerHubUsername } = parseCiEnv();
   await using dockerClient = await DockerClient.create(
     dockerHubUsername,
     dockerHubPat,
@@ -45,22 +39,10 @@ export async function main() {
   }
 }
 
-function parseCiEnv(ciEnv: Record<string, string>) {
-  const dockerHubPat = (() => {
-    const v = ciEnv["DOCKER_HUB_PAT"];
-    if (!v) {
-      throw new Error("Missing DOCKER_HUB_PAT from .env.ci");
-    }
-    return v;
-  })();
+function parseCiEnv() {
+  const dockerHubPat = required(process.env["DOCKER_HUB_PAT"]);
 
-  const dockerHubUsername = (() => {
-    const v = ciEnv["DOCKER_HUB_USERNAME"];
-    if (!v) {
-      throw new Error("Missing DOCKER_HUB_USERNAME from .env.ci");
-    }
-    return v;
-  })();
+  const dockerHubUsername = required(process.env["DOCKER_HUB_USERNAME"]);
 
   return { dockerHubPat, dockerHubUsername };
 }

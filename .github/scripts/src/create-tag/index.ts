@@ -1,14 +1,15 @@
 import {
-  EnvClient,
-  EnvClientStrategy,
   GitHubClient,
   Utils,
+  VersioningClient,
+  VersionUpdatingStrategy,
 } from "@tahminator/pipeline";
 
+const { required } = Utils;
+
 export async function main() {
-  const envClient = EnvClient.create(EnvClientStrategy.SOPS);
   const { githubAppAppId, githubAppInstallationId, githubAppPrivateKey } =
-    parseCiEnv(await envClient.readFromEnv("secrets.yaml"));
+    parseCiEnv();
 
   const ghClient = await GitHubClient.createWithGithubAppToken({
     appId: githubAppAppId,
@@ -16,37 +17,24 @@ export async function main() {
     privateKey: githubAppPrivateKey,
   });
 
+  const versioningClient = new VersioningClient(
+    ghClient,
+    VersionUpdatingStrategy.NONE,
+  );
+
   await ghClient.createTag({
-    onPreTagCreate: async (tag) => {
-      await Utils.updateAllPackageJsonsWithVersion(tag);
-    },
+    nextTag: await versioningClient.next(),
   });
 }
 
-function parseCiEnv(ciEnv: Record<string, string>) {
-  const githubAppAppId = (() => {
-    const v = ciEnv["GITHUB_APP_APP_ID"];
-    if (!v) {
-      throw new Error("Missing GITHUB_APP_APP_ID from .env.ci");
-    }
-    return v;
-  })();
+function parseCiEnv() {
+  const githubAppAppId = required(process.env["_GITHUB_APP_APP_ID"]);
 
-  const githubAppInstallationId = (() => {
-    const v = ciEnv["GITHUB_APP_INSTALLATION_ID"];
-    if (!v) {
-      throw new Error("Missing GITHUB_APP_INSTALLATION_ID from .env.ci");
-    }
-    return v;
-  })();
+  const githubAppInstallationId = required(
+    process.env["_GITHUB_APP_INSTALLATION_ID"],
+  );
 
-  const githubAppPrivateKey = (() => {
-    const v = ciEnv["GITHUB_APP_PEM_CONTENT"];
-    if (!v) {
-      throw new Error("Missing GITHUB_APP_PRIVATE_KEY from .env.ci");
-    }
-    return v;
-  })();
+  const githubAppPrivateKey = required(process.env["_GITHUB_APP_PEM_CONTENT"]);
 
   return { githubAppAppId, githubAppInstallationId, githubAppPrivateKey };
 }
