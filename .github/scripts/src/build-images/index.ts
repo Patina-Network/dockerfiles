@@ -17,7 +17,7 @@ const { ver, shouldUpload } = await yargs(hideBin(process.argv))
   .strict()
   .parse();
 
-const targets = ["pg-az"] as const;
+const targets = ["pg-az", "gerrit"] as const;
 
 export async function main() {
   const { dockerHubPat, dockerHubUsername } = parseCiEnv();

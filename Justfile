@@ -1,6 +1,9 @@
 build-pg-az:
     docker build --platform linux/amd64 -t Patina-Network/pg-az -f src/pg-az/Dockerfile .
 
+build-gerrit:
+    docker build --platform linux/amd64 -t Patina-Network/gerrit -f src/gerrit/Dockerfile .
+
 install-pre-scripts:
     just install-pre-commit && just install-pre-push
 
