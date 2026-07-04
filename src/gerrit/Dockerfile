@@ -9,6 +9,10 @@ USER gerrit
 # add plugins here
 
 ADD --chown=gerrit:gerrit \
-  https://github.com/davido/gerrit-oauth-provider/releases/download/v3.13.4/gerrit-oauth-provider.jar \
-  /var/gerrit/plugins/gerrit-oauth-provider.jar
+  https://gerrit-ci.gerritforge.com/job/plugin-github-gh-bazel-stable-3.13/lastSuccessfulBuild/artifact/bazel-bin/plugins/github/github-oauth.jar \
+  /var/gerrit/lib/github-oauth.jar
+
+ADD --chown=gerrit:gerrit \
+  https://gerrit-ci.gerritforge.com/job/plugin-github-gh-bazel-stable-3.13/lastSuccessfulBuild/artifact/bazel-bin/plugins/github/github-plugin.jar \
+  /var/gerrit/plugins/github.jar
 
