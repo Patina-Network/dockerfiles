@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - "/.github/composite/**"
+    schedule: { interval: weekly }
+  - package-ecosystem: bun
+    directory: /.github/scripts
+    schedule: { interval: weekly }
+  - package-ecosystem: docker
+    directory: /src/*
+    schedule: { interval: weekly }
