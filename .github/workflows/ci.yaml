@@ -18,7 +18,7 @@ concurrency:
 jobs:
   testBuildImages:
     name: Test Build All Docker images
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Checkout Repository
@@ -37,7 +37,7 @@ jobs:
 
   createTag:
     name: Create new tag
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [testBuildImages]
 
     if: github.ref_name == 'main'
